@@ -6,6 +6,7 @@ use App\Models\Transaksi;
 use App\Models\Desert;
 use Illuminate\Http\Request;
 use Validator;
+use DB;
 
 class TransaksiController extends Controller
 {
@@ -14,8 +15,7 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        $data = Transaksi::leftJoin('deserts','trasaksis.id_desert','=','deserts.id');
-
+        $data = Transaksi::leftJoin('deserts','transaksis.id_desert','=','deserts.id')->get(['title','harga','qty','total']);
         return $data;
     }
 
@@ -42,19 +42,24 @@ class TransaksiController extends Controller
             return $validate->errors();
         }
 
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
 
             $desert = Desert::find($request->id_desert);
             $total = $request->qty * $desert->harga;
 
+            if($request->qty > $desert->stock){
+                return 'Stock Desert Tidak Cukup';
+            }
+
             Transaksi::create([
                 'id_desert'=>$request->id_desert,
+                'qty'=>$request->qty,
                 'total'=>$total,
             ]);
 
             $desert->update([
-                'stcok'=>$desert->stock - $request->qty
+                'stock'=>$desert->stock - $request->qty
             ]);
 
             DB::commit();
@@ -63,7 +68,7 @@ class TransaksiController extends Controller
         } catch (\Throwable $e) {
 
             DB::rollback();
-            return 'Data Transaksi Gagal Ditambahkan';
+            return 'Data Transaksi '.$e->getMessage();
 
         }
     }

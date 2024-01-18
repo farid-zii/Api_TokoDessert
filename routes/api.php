@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CofeeController;
 use App\Http\Controllers\DesertController;
+use App\Http\Controllers\TransaksiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +24,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/cofee/{kategori}', [CofeeController::class, 'index' ]);
 Route::get('/all', [CofeeController::class, 'allMenu' ]);
 Route::resource('/dessert', DesertController::class );
+Route::resource('/transaksi', TransaksiController::class );
